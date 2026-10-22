@@ -1,6 +1,11 @@
 import { getEvents, getProfiles } from "@/lib/data.ts";
 import { HEADLINES, MARKET_SNAPSHOT } from "@/lib/sample-data.ts";
+import { getNews } from "@/lib/news.ts";
 import Dashboard from "@/components/Dashboard.tsx";
+import Glossary from "@/components/Glossary.tsx";
+import NewsRadar from "@/components/NewsRadar.tsx";
+import TickerBar from "@/components/TickerBar.tsx";
+import { NEWS_SOURCES } from "@/lib/news-sources.ts";
 
 // A agenda muda ao longo do dia; regenera a página a cada 5 minutos.
 export const revalidate = 300;
@@ -8,7 +13,8 @@ export const revalidate = 300;
 const pctFmt = (n: number) => `${n > 0 ? "+" : n < 0 ? "−" : ""}${Math.abs(n).toLocaleString("pt-BR")}%`;
 
 export default async function Home() {
-  const [events, profiles] = await Promise.all([getEvents(), getProfiles()]);
+  const [events, profiles, news] = await Promise.all([getEvents(), getProfiles(), getNews()]);
+  const renderedAt = Date.now();
   const edition = new Date().toLocaleDateString("pt-BR", {
     weekday: "long",
     day: "numeric",
@@ -18,6 +24,8 @@ export default async function Home() {
   });
 
   return (
+    <>
+    <TickerBar />
     <div className="wrap">
       <header className="mast">
         <div className="mast-top">
@@ -27,9 +35,11 @@ export default async function Home() {
           </div>
           <nav aria-label="Seções">
             <a href="#mercado">Mercado</a>
+            <a href="#noticias">Notícias</a>
             <a href="#agenda">Agenda</a>
             <a href="#risco">Calculadora</a>
             <a href="#alertas">Alertas</a>
+            <a href="#glossario">Glossário</a>
           </nav>
         </div>
         <p className="notice">
@@ -42,6 +52,7 @@ export default async function Home() {
         <div className="section-head">
           <p className="eyebrow">Mercado · {MARKET_SNAPSHOT.asOf}</p>
           <h2>{MARKET_SNAPSHOT.headline}</h2>
+          <p className="meta">Destaques do relatório diário.</p>
         </div>
         <div className="ticker">
           {MARKET_SNAPSHOT.tickers.map((t) => (
@@ -72,12 +83,19 @@ export default async function Home() {
         </ul>
       </section>
 
-      <Dashboard events={events} profiles={profiles} renderedAt={Date.now()} />
+      {news.length > 0 && <NewsRadar items={news} renderedAt={renderedAt} />}
+
+      <Dashboard events={events} profiles={profiles} renderedAt={renderedAt} />
+
+      <Glossary />
 
       <footer>
         <p>
-          Fontes: The Block, Decrypt, CoinDesk, MarketAlleys, KuCoin, Livecoins e CoinGecko, compiladas no relatório
-          diário. Preços da manhã, sem atualização em tempo real nesta versão.
+          <b>Como fazemos.</b> Os destaques do dia vêm do relatório diário, compilado de The Block, Decrypt, CoinDesk,
+          MarketAlleys, KuCoin, Livecoins e CoinGecko. O radar mostra só título e link de {NEWS_SOURCES.length} portais
+          de referência; o texto fica na fonte. O viés da agenda é a reação que o mercado teve a eventos parecidos, nunca
+          uma previsão. Não publicamos conteúdo pago nem usamos links de afiliado. Preços da manhã, sem atualização em
+          tempo real nesta versão.
         </p>
         <p>
           Este material é informativo e educacional. Não é recomendação de investimento, oferta ou consultoria.
@@ -85,5 +103,6 @@ export default async function Home() {
         </p>
       </footer>
     </div>
+    </>
   );
 }
