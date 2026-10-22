@@ -1,6 +1,8 @@
 import { getEvents, getProfiles } from "@/lib/data.ts";
 import { HEADLINES, MARKET_SNAPSHOT } from "@/lib/sample-data.ts";
 import { getNews } from "@/lib/news.ts";
+import { getMarket } from "@/lib/market.ts";
+import { asOfLabel, brlPrice, signedPct, usdPrice } from "@/components/format.ts";
 import Dashboard from "@/components/Dashboard.tsx";
 import Glossary from "@/components/Glossary.tsx";
 import NewsRadar from "@/components/NewsRadar.tsx";
@@ -10,10 +12,8 @@ import { NEWS_SOURCES } from "@/lib/news-sources.ts";
 // A agenda muda ao longo do dia; regenera a página a cada 5 minutos.
 export const revalidate = 300;
 
-const pctFmt = (n: number) => `${n > 0 ? "+" : n < 0 ? "−" : ""}${Math.abs(n).toLocaleString("pt-BR")}%`;
-
 export default async function Home() {
-  const [events, profiles, news] = await Promise.all([getEvents(), getProfiles(), getNews()]);
+  const [events, profiles, news, market] = await Promise.all([getEvents(), getProfiles(), getNews(), getMarket()]);
   const renderedAt = Date.now();
   const edition = new Date().toLocaleDateString("pt-BR", {
     weekday: "long",
@@ -25,7 +25,7 @@ export default async function Home() {
 
   return (
     <>
-    <TickerBar />
+    <TickerBar market={market} />
     <div className="wrap">
       <header className="mast">
         <div className="mast-top">
@@ -50,23 +50,38 @@ export default async function Home() {
 
       <section className="section" id="mercado">
         <div className="section-head">
-          <p className="eyebrow">Mercado · {MARKET_SNAPSHOT.asOf}</p>
+          <p className="eyebrow">
+            Mercado · {market.live ? `ao vivo, ${asOfLabel(market.asOf)}` : `retrato de ${asOfLabel(market.asOf)}`}
+          </p>
           <h2>{MARKET_SNAPSHOT.headline}</h2>
-          <p className="meta">Destaques do relatório diário.</p>
+          <p className="meta">
+            {market.live
+              ? `Preços da CoinGecko, variação em 24 h.${market.usdBrl ? ` Dólar implícito: ${brlPrice(market.usdBrl)}.` : ""} Abaixo, os destaques do relatório diário.`
+              : "Preços do relatório diário; a fonte ao vivo não respondeu. Abaixo, os destaques do dia."}
+          </p>
         </div>
         <div className="ticker">
-          {MARKET_SNAPSHOT.tickers.map((t) => (
-            <div className="tick" key={t.label}>
-              <span className="sym">{t.label}</span>
-              <span className="px num">{t.price}</span>
-              <span className={`chg num ${t.change >= 0 ? "up" : "down"}`}>{pctFmt(t.change)} 24h</span>
+          {market.quotes.map((q) => (
+            <div className="tick" key={q.ticker}>
+              <span className="sym">
+                {q.name}
+                {q.name !== q.ticker && ` · ${q.ticker}`}
+              </span>
+              <span className="px num">{q.brl !== null ? brlPrice(q.brl) : usdPrice(q.usd)}</span>
+              {q.brl !== null && <span className="meta num">{usdPrice(q.usd)}</span>}
+              <span className={`chg num ${q.change24h >= 0 ? "up" : "down"}`}>{signedPct(q.change24h)} 24h</span>
             </div>
           ))}
-          <div className="tick">
-            <span className="sym">Medo e Ganância</span>
-            <span className="px num">{MARKET_SNAPSHOT.fearGreed.value}</span>
-            <span className="meta">Ganância · ontem {MARKET_SNAPSHOT.fearGreed.previous}</span>
-          </div>
+          {market.fearGreed && (
+            <div className="tick">
+              <span className="sym">Medo e Ganância</span>
+              <span className="px num">{market.fearGreed.value}</span>
+              <span className="meta">
+                {market.fearGreed.label}
+                {market.fearGreed.previous !== null && ` · ontem ${market.fearGreed.previous}`}
+              </span>
+            </div>
+          )}
         </div>
         <ul className="headlines">
           {HEADLINES.map((h) => (
@@ -94,8 +109,8 @@ export default async function Home() {
           <b>Como fazemos.</b> Os destaques do dia vêm do relatório diário, compilado de The Block, Decrypt, CoinDesk,
           MarketAlleys, KuCoin, Livecoins e CoinGecko. O radar mostra só título e link de {NEWS_SOURCES.length} portais
           de referência; o texto fica na fonte. O viés da agenda é a reação que o mercado teve a eventos parecidos, nunca
-          uma previsão. Não publicamos conteúdo pago nem usamos links de afiliado. Preços da manhã, sem atualização em
-          tempo real nesta versão.
+          uma previsão. Não publicamos conteúdo pago nem usamos links de afiliado. Preços da CoinGecko e índice de Medo e
+          Ganância da alternative.me, atualizados a cada poucos minutos.
         </p>
         <p>
           Este material é informativo e educacional. Não é recomendação de investimento, oferta ou consultoria.

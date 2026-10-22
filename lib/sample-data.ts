@@ -36,17 +36,17 @@ export const SAMPLE_EVENTS: MarketEvent[] = [
   ev({ slug: "genius-act-2027-01-18", category: "reg", title: "Regras das stablecoins entram em vigor nos EUA", description: "Regulamentação final do GENIUS Act pelo OCC.", note: "Clareza regulatória costuma ser lida como positiva no longo prazo.", at: "2027-01-18T00:00", allDay: true, timeConfirmed: true, assets: ["USDT", "USDC", "ETH", "SOL"], bias: "up", biasLabel: "Positivo estrutural" }),
 ];
 
-// Retrato do mercado e manchetes do relatório de 22/10/2026. A etapa 2 troca por coleta automática.
+// Retrato do mercado do relatório de 22/10/2026. Usado quando CoinGecko e alternative.me não respondem.
 export const MARKET_SNAPSHOT = {
-  asOf: "22/10, 05:45 UTC",
+  asOf: "2026-10-22T05:45:00Z",
   headline: "O BTC encostou em US$ 84,8 mil e devolveu a alta",
-  tickers: [
-    { label: "Bitcoin · BTC", price: "US$ 82,7 mil", change: 0.1 },
-    { label: "Ethereum · ETH", price: "US$ 2.437", change: -0.1 },
-    { label: "Solana · SOL", price: "US$ 105", change: -0.7 },
-    { label: "XRP", price: "US$ 1,34", change: 0.7 },
+  quotes: [
+    { ticker: "BTC", name: "Bitcoin", usd: 82700, brl: null, change24h: 0.1 },
+    { ticker: "ETH", name: "Ethereum", usd: 2437, brl: null, change24h: -0.1 },
+    { ticker: "SOL", name: "Solana", usd: 105, brl: null, change24h: -0.7 },
+    { ticker: "XRP", name: "XRP", usd: 1.34, brl: null, change24h: 0.7 },
   ],
-  fearGreed: { value: 68, previous: 63 },
+  fearGreed: { value: 68, label: "Ganância", previous: 63 },
 };
 
 export const HEADLINES = [

@@ -1,23 +1,32 @@
-import { MARKET_SNAPSHOT } from "@/lib/sample-data.ts";
+import type { MarketData } from "@/lib/market.ts";
+import { asOfLabel, brlPrice, signedPct, usdPrice } from "./format.ts";
 
-const pctFmt = (n: number) => `${n > 0 ? "+" : n < 0 ? "−" : ""}${Math.abs(n).toLocaleString("pt-BR")}%`;
-
-export default function TickerBar() {
+export default function TickerBar({ market }: { market: MarketData }) {
   return (
     <div className="tickerbar" role="region" aria-label="Cotações">
       <div className="tickerbar-inner">
-        {MARKET_SNAPSHOT.tickers.map((t) => (
-          <span key={t.label} className="tb-item">
-            <b>{t.label.split(" · ").at(-1)}</b>
-            <span className="num">{t.price}</span>
-            <span className={`num chg ${t.change >= 0 ? "up" : "down"}`}>{pctFmt(t.change)}</span>
+        {market.quotes.map((q) => (
+          <span key={q.ticker} className="tb-item">
+            <b>{q.ticker}</b>
+            <span className="num">{q.brl !== null ? brlPrice(q.brl) : usdPrice(q.usd)}</span>
+            <span className={`num chg ${q.change24h >= 0 ? "up" : "down"}`}>{signedPct(q.change24h)}</span>
           </span>
         ))}
-        <span className="tb-item">
-          <b>Medo e Ganância</b>
-          <span className="num">{MARKET_SNAPSHOT.fearGreed.value}</span>
+        {market.usdBrl !== null && (
+          <span className="tb-item">
+            <b>Dólar</b>
+            <span className="num">{brlPrice(market.usdBrl)}</span>
+          </span>
+        )}
+        {market.fearGreed && (
+          <span className="tb-item">
+            <b>Medo e Ganância</b>
+            <span className="num">{market.fearGreed.value}</span>
+          </span>
+        )}
+        <span className="tb-asof">
+          {market.live ? `Ao vivo · ${asOfLabel(market.asOf)}` : `Retrato de ${asOfLabel(market.asOf)}`}
         </span>
-        <span className="tb-asof">{MARKET_SNAPSHOT.asOf}</span>
       </div>
     </div>
   );
