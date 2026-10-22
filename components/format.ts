@@ -27,3 +27,17 @@ export const dateTimeLabel = (d: Date) =>
     minute: "2-digit",
     timeZone: TZ,
   });
+
+const priceDigits = (n: number) => (n >= 1000 ? 0 : n >= 1 ? 2 : 4);
+
+/** Preço com casas decimais conforme a grandeza: US$ 82.700, US$ 105,00, US$ 0,1834. */
+export const usdPrice = (n: number) =>
+  `US$ ${n.toLocaleString("pt-BR", { minimumFractionDigits: priceDigits(n), maximumFractionDigits: priceDigits(n) })}`;
+export const brlPrice = (n: number) =>
+  `R$ ${n.toLocaleString("pt-BR", { minimumFractionDigits: priceDigits(n), maximumFractionDigits: priceDigits(n) })}`;
+
+export const signedPct = (n: number) =>
+  `${n > 0 ? "+" : n < 0 ? "−" : ""}${Math.abs(n).toLocaleString("pt-BR", { maximumFractionDigits: 1 })}%`;
+
+export const asOfLabel = (iso: string) =>
+  new Date(iso).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit", timeZone: TZ });
