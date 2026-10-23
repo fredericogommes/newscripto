@@ -28,3 +28,20 @@ export interface Position {
   ticker: string;
   valueBrl: number;
 }
+
+export interface EditionItem {
+  tag: string;
+  title: string;
+  body: string;
+  source: string;
+  url: string;
+}
+
+/** Boletim escrito pelo agente agendado às 8h, 12h e 20h. */
+export interface Edition {
+  slot: "08h" | "12h" | "20h" | "extra";
+  publishedAt: string;
+  headline: string;
+  items: EditionItem[];
+  sourcesChecked: string[];
+}

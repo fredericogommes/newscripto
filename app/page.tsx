@@ -1,4 +1,4 @@
-import { getEvents, getProfiles } from "@/lib/data.ts";
+import { getEvents, getLatestEdition, getProfiles } from "@/lib/data.ts";
 import { getNews } from "@/lib/news.ts";
 import { getMarket } from "@/lib/market.ts";
 import type { NewsItem } from "@/lib/rss.ts";
@@ -32,7 +32,13 @@ function frontPage(news: NewsItem[]) {
 }
 
 export default async function Home() {
-  const [events, profiles, news, market] = await Promise.all([getEvents(), getProfiles(), getNews(), getMarket()]);
+  const [events, profiles, news, market, latestEdition] = await Promise.all([
+    getEvents(),
+    getProfiles(),
+    getNews(),
+    getMarket(),
+    getLatestEdition(),
+  ]);
   const renderedAt = Date.now();
   const edition = new Date().toLocaleDateString("pt-BR", {
     weekday: "long",
@@ -71,7 +77,7 @@ export default async function Home() {
             <MarketWidget market={market} />
             {market.fearGreed && <FearGreed fg={market.fearGreed} />}
             <NextEvents events={events} now={renderedAt} />
-            <Briefing />
+            <Briefing edition={latestEdition} />
           </aside>
         </div>
 
@@ -115,7 +121,7 @@ export default async function Home() {
             <b>Como fazemos</b>
             <p>
               As notícias mostram título, linha fina e miniatura publicados nos feeds dos portais, sempre com link para a
-              matéria original. O resumo do dia vem do nosso relatório diário. O viés da agenda é a reação que o mercado
+              matéria original. O boletim lateral é escrito às 8h, 12h e 20h a partir da revisão desses portais. O viés da agenda é a reação que o mercado
               teve a eventos parecidos, nunca uma previsão. Não publicamos conteúdo pago nem usamos links de afiliado.
               Preços da CoinGecko e índice de Medo e Ganância da alternative.me.
             </p>

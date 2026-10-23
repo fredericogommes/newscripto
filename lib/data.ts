@@ -1,5 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
-import type { AssetProfile, MarketEvent } from "./types.ts";
+import type { AssetProfile, Edition, EditionItem, MarketEvent } from "./types.ts";
 import { SAMPLE_EVENTS, SAMPLE_PROFILES } from "./sample-data.ts";
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -44,4 +44,34 @@ export async function getProfiles(): Promise<AssetProfile[]> {
     betaBtc: Number(p.beta_btc),
     isStable: p.is_stable,
   }));
+}
+
+const isItem = (i: Partial<EditionItem>): i is EditionItem =>
+  typeof i?.title === "string" && typeof i.body === "string" && typeof i.url === "string" && /^https:\/\//.test(i.url);
+
+/** Boletim mais recente do agente. Se o Supabase falhar ou ainda não houver edição, a página usa o resumo fixo. */
+export async function getLatestEdition(): Promise<Edition | null> {
+  if (!supabase) return null;
+  const { data, error } = await supabase
+    .from("news_editions")
+    .select("slot, published_at, headline, items, sources_checked")
+    .order("published_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error || !data) return null;
+  const items = (Array.isArray(data.items) ? data.items : []).filter(isItem).map((i: EditionItem) => ({
+    tag: String(i.tag ?? ""),
+    title: i.title,
+    body: i.body,
+    source: String(i.source ?? ""),
+    url: i.url,
+  }));
+  if (items.length === 0) return null;
+  return {
+    slot: data.slot,
+    publishedAt: data.published_at,
+    headline: data.headline,
+    items,
+    sourcesChecked: data.sources_checked ?? [],
+  };
 }

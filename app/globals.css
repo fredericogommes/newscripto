@@ -275,3 +275,4 @@ pre.json{margin:0;background:var(--bg);border:1px solid var(--line);border-radiu
 .glossary div{border-top:1px solid var(--line);padding-top:10px}
 .glossary dt{font-weight:600}
 .glossary dd{margin:4px 0 0;color:var(--muted);font-size:14px}
+.brief-head{font-weight:700;font-size:15px;line-height:1.35}
