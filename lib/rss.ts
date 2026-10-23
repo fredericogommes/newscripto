@@ -7,6 +7,25 @@ export interface NewsItem {
   region: Region;
   publishedAt: string; // ISO 8601
   tickers: string[];
+  category: Category;
+  image?: string; // miniatura publicada no próprio feed
+  summary?: string; // linha fina do feed, cortada em ~180 caracteres
+}
+
+export const CATEGORIES = ["Bitcoin", "Ethereum", "Altcoins", "Mercados", "Regulação", "Blockchain"] as const;
+export type Category = (typeof CATEGORIES)[number];
+
+const REGULATION = /\b(regula\w*|sec|cvm|banco central|bacen|lei|projeto de lei|imposto\w*|tribut\w*|receita federal|genius act|mica|congress\w*|senado|justiça|court|tribunal|sanç\w*|lawsuit)\b/i;
+const MARKETS = /\b(preço|preços|price|etf|etfs|alta|queda|rally|liquida\w*|mercado\w*|market\w*|trader\w*|fluxo\w*|inflows?|outflows?|ações|stocks?|fed|juros)\b/i;
+
+/** Editoria da manchete: regulação vence; depois o ativo citado; depois mercado; o resto é blockchain. */
+export function categorize(title: string, tickers: string[]): Category {
+  if (REGULATION.test(title)) return "Regulação";
+  if (tickers.includes("BTC")) return "Bitcoin";
+  if (tickers.includes("ETH")) return "Ethereum";
+  if (tickers.some((t) => t !== "USDT" && t !== "USDC")) return "Altcoins";
+  if (MARKETS.test(title)) return "Mercados";
+  return "Blockchain";
 }
 
 // Palavras que marcam o ativo de uma manchete. Ordem importa só para a exibição das tags.
@@ -51,6 +70,28 @@ export function decodeEntities(s: string): string {
   });
 }
 
+function attr(block: string, re: RegExp): string | undefined {
+  const url = block.match(re)?.[1];
+  return url && /^https:\/\//.test(url) ? decodeEntities(url) : undefined;
+}
+
+/** Miniatura do item: media:content/thumbnail, enclosure de imagem ou a primeira <img> do texto. */
+export function findImage(block: string): string | undefined {
+  return (
+    attr(block, /<media:(?:content|thumbnail)[^>]*\burl="([^"]+)"[^>]*>/i) ??
+    attr(block, /<enclosure[^>]*\burl="([^"]+\.(?:jpe?g|png|webp|gif)(?:\?[^"]*)?)"/i) ??
+    attr(block, /<enclosure[^>]*type="image\/[^"]+"[^>]*\burl="([^"]+)"/i) ??
+    attr(block, /<enclosure[^>]*\burl="([^"]+)"[^>]*type="image\//i) ??
+    attr(decodeEntities(block), /<img[^>]*\bsrc="([^"]+)"/i)
+  );
+}
+
+export function shorten(text: string, max = 180): string {
+  if (text.length <= max) return text;
+  const cut = text.slice(0, max);
+  return cut.slice(0, cut.lastIndexOf(" ") > max * 0.6 ? cut.lastIndexOf(" ") : max).replace(/[\s,.;:–—-]+$/, "") + "…";
+}
+
 function tag(block: string, name: string): string | undefined {
   const m = block.match(new RegExp(`<${name}(?:\\s[^>]*)?>([\\s\\S]*?)</${name}>`, "i"));
   if (!m) return undefined;
@@ -68,13 +109,20 @@ export function parseFeed(xml: string, source: { name: string; region: Region })
     const date = tag(b, "pubDate") ?? tag(b, "published") ?? tag(b, "updated") ?? tag(b, "dc:date");
     const time = date ? Date.parse(date) : NaN;
     if (!title || !link || !/^https?:\/\//.test(link) || Number.isNaN(time)) continue;
+    const tickers = detectTickers(title);
+    // Alguns feeds trazem o HTML escapado dentro da descrição; decodifica e limpa de novo.
+    const rawSummary = tag(b, "description") ?? tag(b, "summary");
+    const summary = rawSummary ? decodeEntities(rawSummary).replace(/<[^>]+>/g, "").replace(/\s+/g, " ").replace(/\s*(The post|O post) .+ (appeared first on|apareceu primeiro em) .+$/i, "").trim() : "";
     items.push({
       title,
       link,
       source: source.name,
       region: source.region,
       publishedAt: new Date(time).toISOString(),
-      tickers: detectTickers(title),
+      tickers,
+      category: categorize(title, tickers),
+      image: findImage(b),
+      summary: summary && summary !== title ? shorten(summary) : undefined,
     });
   }
   return items;
