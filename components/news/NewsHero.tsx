@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import type { NewsItem } from "@/lib/rss.ts";
 import { ago } from "../format.ts";
-import Thumb, { slug } from "./Thumb.tsx";
+import Thumb, { linkProps, slug } from "./Thumb.tsx";
 
 /** Abertura no formato dos portais: uma manchete grande e a coluna de últimas notícias ao lado. */
 export default function NewsHero({
@@ -20,7 +20,7 @@ export default function NewsHero({
 
   return (
     <section className="hero" aria-label="Destaques">
-      <a className="hero-main" href={featured.link} target="_blank" rel="noopener">
+      <a className="hero-main" href={featured.link} {...linkProps(featured.link)}>
         <Thumb item={featured} eager />
         <span className="hero-text">
           <span className={`cat cat-${slug(featured.category)}`}>{featured.category}</span>
@@ -37,12 +37,12 @@ export default function NewsHero({
           {latest.map((i) => (
             <li key={i.link}>
               <time className="latest-time" dateTime={i.publishedAt}>{ago(Date.parse(i.publishedAt), now)}</time>
-              <a href={i.link} target="_blank" rel="noopener">{i.title}</a>
+              <a href={i.link} {...linkProps(i.link)}>{i.title}</a>
               <span className="latest-src">{i.source}</span>
             </li>
           ))}
         </ol>
-        <a className="more" href="#noticias">Ver todas as notícias →</a>
+        <a className="more" href="/#noticias">Ver todas as notícias →</a>
       </div>
     </section>
   );

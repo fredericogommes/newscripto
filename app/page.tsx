@@ -4,7 +4,8 @@ import { getMarket } from "@/lib/market.ts";
 import { getUniverse } from "@/lib/universe.ts";
 import { SAMPLE_PROFILES } from "@/lib/sample-data.ts";
 import type { NewsItem } from "@/lib/rss.ts";
-import { NEWS_SOURCES } from "@/lib/news-sources.ts";
+import { asNewsItem, getArticles } from "@/lib/articles.ts";
+import SiteFooter from "@/components/SiteFooter.tsx";
 import Dashboard from "@/components/Dashboard.tsx";
 import Glossary from "@/components/Glossary.tsx";
 import SiteHeader from "@/components/SiteHeader.tsx";
@@ -34,7 +35,7 @@ function frontPage(news: NewsItem[]) {
 }
 
 export default async function Home() {
-  const [events, profiles, news, market, latestEdition, universe] = await Promise.all([
+  const [events, profiles, feedNews, market, latestEdition, universe, articles] = await Promise.all([
     getEvents(),
     getProfiles(),
     getNews(),
@@ -42,7 +43,10 @@ export default async function Home() {
     getLatestEdition(),
     // Universo ao vivo (CoinGecko + corretoras); se falhar, ficam os perfis fixos do Supabase.
     getUniverse().catch(() => null),
+    getArticles(),
   ]);
+  // Com matérias próprias publicadas, a capa só mostra a redação; sem elas, volta às manchetes dos portais.
+  const news = articles.length >= 4 ? articles.map(asNewsItem) : feedNews;
   const outro = SAMPLE_PROFILES.find((p) => p.ticker === "OUTRO")!;
   const assetProfiles = universe ? [...universe.profiles, outro] : profiles;
   const renderedAt = Date.now();
@@ -101,49 +105,7 @@ export default async function Home() {
         <Glossary />
       </main>
 
-      <footer className="site-footer">
-        <div className="footer-inner">
-          <div className="footer-brand">
-            <span className="logo">
-              <span className="logo-mark" aria-hidden="true">JC</span>
-              <span className="logo-word">Jornal <b>Cripto</b></span>
-            </span>
-            <p>
-              Manchetes de {NEWS_SOURCES.length} portais do Brasil e do mundo, agenda de eventos do mercado, calculadora de
-              risco em reais e alertas da sua carteira.
-            </p>
-          </div>
-          <nav className="footer-col" aria-label="Seções">
-            <b>Seções</b>
-            <a href="#noticias">Notícias</a>
-            <a href="#mercado">Mercados</a>
-            <a href="#agenda">Agenda</a>
-            <a href="#risco">Calculadora de risco</a>
-            <a href="#alertas">Alertas</a>
-            <a href="#glossario">Glossário</a>
-          </nav>
-          <div className="footer-col">
-            <b>Fontes</b>
-            {NEWS_SOURCES.slice(0, 7).map((s) => (
-              <span key={s.name}>{s.name}</span>
-            ))}
-            <span>e mais {NEWS_SOURCES.length - 7} portais</span>
-          </div>
-          <div className="footer-col footer-how">
-            <b>Como fazemos</b>
-            <p>
-              As notícias mostram título, linha fina e miniatura publicados nos feeds dos portais, sempre com link para a
-              matéria original. O boletim lateral é escrito às 8h, 12h e 20h a partir da revisão desses portais. O viés da agenda é a reação que o mercado
-              teve a eventos parecidos, nunca uma previsão. Não publicamos conteúdo pago nem usamos links de afiliado.
-              Preços da CoinGecko e índice de Medo e Ganância da alternative.me.
-            </p>
-          </div>
-        </div>
-        <p className="footer-legal">
-          Este material é informativo e educacional. Não é recomendação de investimento, oferta ou consultoria. Criptoativos
-          são voláteis e você pode perder parte ou todo o valor investido. © {new Date().getFullYear()} Jornal Cripto.
-        </p>
-      </footer>
+      <SiteFooter />
     </>
   );
 }

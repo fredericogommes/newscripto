@@ -46,8 +46,11 @@ export async function getProfiles(): Promise<AssetProfile[]> {
   }));
 }
 
-const isItem = (i: Partial<EditionItem>): i is EditionItem =>
-  typeof i?.title === "string" && typeof i.body === "string" && typeof i.url === "string" && /^https:\/\//.test(i.url);
+type RawItem = Partial<EditionItem> & { slug?: string };
+const isItem = (i: RawItem): i is EditionItem & { slug?: string } =>
+  typeof i?.title === "string" &&
+  typeof i.body === "string" &&
+  ((typeof i.slug === "string" && /^[a-z0-9-]{1,120}$/.test(i.slug)) || (typeof i.url === "string" && /^https:\/\//.test(i.url)));
 
 /** Boletim mais recente do agente. Se o Supabase falhar ou ainda não houver edição, a página usa o resumo fixo. */
 export async function getLatestEdition(): Promise<Edition | null> {
@@ -59,12 +62,12 @@ export async function getLatestEdition(): Promise<Edition | null> {
     .limit(1)
     .maybeSingle();
   if (error || !data) return null;
-  const items = (Array.isArray(data.items) ? data.items : []).filter(isItem).map((i: EditionItem) => ({
+  const items = (Array.isArray(data.items) ? data.items : []).filter(isItem).map((i: EditionItem & { slug?: string }) => ({
     tag: String(i.tag ?? ""),
     title: i.title,
     body: i.body,
-    source: String(i.source ?? ""),
-    url: i.url,
+    source: i.slug ? "Leia a matéria" : String(i.source ?? ""),
+    url: i.slug ? `/noticias/${i.slug}` : i.url,
   }));
   if (items.length === 0) return null;
   return {

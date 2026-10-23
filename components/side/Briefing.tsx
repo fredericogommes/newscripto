@@ -22,7 +22,7 @@ export default function Briefing({ edition }: { edition: Edition | null }) {
             <span className="tag">{h.tag}</span>
             <span>
               <b>{h.title}</b> {h.body}{" "}
-              <a href={h.url} target="_blank" rel="noopener">{h.source}</a>
+              <a href={h.url} {...(/^https?:/.test(h.url) ? { target: "_blank", rel: "noopener" } : {})}>{h.source}</a>
             </span>
           </li>
         ))}
