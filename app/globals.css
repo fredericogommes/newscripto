@@ -228,7 +228,7 @@ a:hover .thumb img{transform:scale(1.04)}
 .bias.neu{background:var(--accent-soft);color:var(--accent)}
 .countdown{font-size:12px;color:var(--muted)}
 
-.calc{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:20px}
+.calc{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.4fr);gap:20px;align-items:start}
 .panel{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:18px;display:grid;gap:14px;align-content:start;min-width:0}
 .rows{display:grid;gap:8px}
 .row{display:grid;grid-template-columns:1fr 1.2fr 32px;gap:8px}
@@ -276,3 +276,41 @@ pre.json{margin:0;background:var(--bg);border:1px solid var(--line);border-radiu
 .glossary dt{font-weight:600}
 .glossary dd{margin:4px 0 0;color:var(--muted);font-size:14px}
 .brief-head{font-weight:700;font-size:15px;line-height:1.35}
+
+/* Calculadora: posições, seletor de moedas e abas */
+.pos{display:grid;gap:6px;padding-bottom:10px;border-bottom:1px solid var(--line)}
+.pos-input{display:grid;grid-template-columns:auto minmax(0,1fr) 36px;gap:8px}
+.pos-meta{display:flex;flex-wrap:wrap;gap:4px 12px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{background:transparent;border:0;padding:0 10px;color:var(--muted);font-size:13px}
+.seg button[aria-pressed="true"]{background:var(--brand);color:var(--brand-ink)}
+.seg button:disabled{opacity:.4;cursor:not-allowed}
+.picker{position:relative}
+.picker-btn{width:100%;display:flex;align-items:center;gap:8px;text-align:left;background:var(--soft);border:1px solid var(--line);border-radius:8px;padding:8px 10px;color:var(--ink);font-weight:500}
+.picker-btn:hover{border-color:var(--brand)}
+.picker-btn img,.picker-pop img{border-radius:50%;flex:none}
+.picker-name{flex:1;min-width:0;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.coin-dot{width:20px;height:20px;border-radius:50%;background:var(--line);flex:none}
+.picker-pop{position:absolute;z-index:15;top:calc(100% + 4px);left:0;right:0;min-width:min(340px,calc(100vw - 32px));background:var(--paper);border:1px solid var(--line);border-radius:10px;box-shadow:0 12px 32px rgba(0,0,0,.18);padding:10px;display:grid;gap:8px}
+.picker-ex{display:flex;gap:6px;overflow-x:auto;scrollbar-width:thin;padding-bottom:2px}
+.picker-ex .chip{white-space:nowrap}
+.picker-pop ul{list-style:none;margin:0;padding:0;max-height:320px;overflow-y:auto}
+.picker-pop li button{width:100%;display:flex;align-items:center;gap:10px;background:none;border:0;border-radius:6px;padding:7px 6px;text-align:left;color:var(--ink);font-weight:400}
+.picker-pop li button:hover,.picker-pop li[aria-selected="true"] button{background:var(--soft)}
+.pk-main{flex:1;min-width:0;display:grid}
+.pk-ex{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pk-px{display:grid;justify-items:end;font-size:12.5px}
+.pk-empty{padding:8px 6px}
+.assumptions{display:grid;gap:8px;margin-top:8px}
+.tabpanel{display:grid;gap:14px}
+.slider{display:grid;gap:10px;font-size:14px;color:var(--ink)}
+.slider input{padding:0;accent-color:var(--brand);background:none;border:0}
+td.cell-wrap{white-space:normal;min-width:180px}
+.ep-note{display:block;font-size:12px}
+.bar.two{grid-template-columns:52px 1fr 52px;align-items:center}
+.tracks{display:grid;gap:3px}
+.bar span.fill.risk{background:var(--down)}
+.legend{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.sw{display:inline-block;width:12px;height:8px;border-radius:2px;margin-left:6px}
+.sw.w{background:var(--brand)} .sw.r{background:var(--down)}
+.kv .v{word-break:break-word}

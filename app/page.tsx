@@ -1,6 +1,8 @@
 import { getEvents, getLatestEdition, getProfiles } from "@/lib/data.ts";
 import { getNews } from "@/lib/news.ts";
 import { getMarket } from "@/lib/market.ts";
+import { getUniverse } from "@/lib/universe.ts";
+import { SAMPLE_PROFILES } from "@/lib/sample-data.ts";
 import type { NewsItem } from "@/lib/rss.ts";
 import { NEWS_SOURCES } from "@/lib/news-sources.ts";
 import Dashboard from "@/components/Dashboard.tsx";
@@ -32,13 +34,17 @@ function frontPage(news: NewsItem[]) {
 }
 
 export default async function Home() {
-  const [events, profiles, news, market, latestEdition] = await Promise.all([
+  const [events, profiles, news, market, latestEdition, universe] = await Promise.all([
     getEvents(),
     getProfiles(),
     getNews(),
     getMarket(),
     getLatestEdition(),
+    // Universo ao vivo (CoinGecko + corretoras); se falhar, ficam os perfis fixos do Supabase.
+    getUniverse().catch(() => null),
   ]);
+  const outro = SAMPLE_PROFILES.find((p) => p.ticker === "OUTRO")!;
+  const assetProfiles = universe ? [...universe.profiles, outro] : profiles;
   const renderedAt = Date.now();
   const edition = new Date().toLocaleDateString("pt-BR", {
     weekday: "long",
@@ -83,7 +89,13 @@ export default async function Home() {
 
         <div className="tools-band">
           <p className="band-title">Ferramentas do Jornal Cripto</p>
-          <Dashboard events={events} profiles={profiles} renderedAt={renderedAt} />
+          <Dashboard
+            events={events}
+            profiles={assetProfiles}
+            exchanges={universe?.exchanges ?? []}
+            universeAsOf={universe?.asOf ?? null}
+            renderedAt={renderedAt}
+          />
         </div>
 
         <Glossary />

@@ -16,10 +16,14 @@ const STORAGE_KEY = "jornal-cripto-posicoes";
 export default function Dashboard({
   events,
   profiles,
+  exchanges,
+  universeAsOf,
   renderedAt,
 }: {
   events: MarketEvent[];
   profiles: AssetProfile[];
+  exchanges: string[];
+  universeAsOf: string | null;
   renderedAt: number;
 }) {
   const profileMap = useMemo(() => Object.fromEntries(profiles.map((p) => [p.ticker, p])), [profiles]);
@@ -43,7 +47,16 @@ export default function Dashboard({
     } catch {}
   };
 
-  const report = useMemo(() => analyzePortfolio(positions, profileMap), [positions, profileMap]);
+  // Posições em quantidade viram reais pelo preço atual.
+  const valued = useMemo(
+    () =>
+      positions.map((p) => {
+        const price = profileMap[p.ticker]?.priceBrl;
+        return p.qty !== undefined && price !== undefined ? { ...p, valueBrl: p.qty * price } : p;
+      }),
+    [positions, profileMap],
+  );
+  const report = useMemo(() => analyzePortfolio(valued, profileMap), [valued, profileMap]);
   const held = useMemo(() => (report ? report.holdings.map((h) => h.ticker) : []), [report]);
   const upcoming = useMemo(
     () =>
@@ -62,6 +75,8 @@ export default function Dashboard({
       <RiskCalculator
         positions={positions}
         profiles={profiles}
+        exchanges={exchanges}
+        universeAsOf={universeAsOf}
         report={report}
         upcoming={upcoming}
         now={now}
