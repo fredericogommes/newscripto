@@ -4,9 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import { CATEGORIES, type Category, type NewsItem } from "@/lib/rss.ts";
 import type { Region } from "@/lib/news-sources.ts";
 import { ago } from "../format.ts";
-import Thumb, { slug } from "./Thumb.tsx";
+import Thumb, { linkProps, slug } from "./Thumb.tsx";
 
-const TABS: ("Todas" | Category)[] = ["Todas", ...CATEGORIES];
 const REGIONS: ("Todas as regiões" | Region)[] = ["Todas as regiões", "Brasil", "Global", "LatAm"];
 const PAGE = 12;
 // Mesma chave em que a calculadora guarda as posições.
@@ -15,7 +14,7 @@ const STORAGE_KEY = "jornal-cripto-posicoes";
 const fold = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 
 export default function NewsFeed({ items, renderedAt }: { items: NewsItem[]; renderedAt: number }) {
-  const [tab, setTab] = useState<(typeof TABS)[number]>("Todas");
+  const [tab, setTab] = useState<"Todas" | Category>("Todas");
   const [region, setRegion] = useState<(typeof REGIONS)[number]>("Todas as regiões");
   const [query, setQuery] = useState("");
   const [mine, setMine] = useState(false);
@@ -49,6 +48,9 @@ export default function NewsFeed({ items, renderedAt }: { items: NewsItem[]; ren
     );
   }, [items, tab, region, query, mine, held]);
   const sources = new Set(items.map((i) => i.source)).size;
+  const own = items.every((i) => !/^https?:/.test(i.link));
+  const tabs = ["Todas" as const, ...CATEGORIES.filter((c) => items.some((i) => i.category === c))];
+  const regions = new Set(items.map((i) => i.region)).size;
   const reset = () => setShown(PAGE);
 
   return (
@@ -56,11 +58,11 @@ export default function NewsFeed({ items, renderedAt }: { items: NewsItem[]; ren
       <div className="feed-head">
         <h2 className="block-title" id="noticias-title">Notícias</h2>
         <span className="meta">
-          {items.length} manchetes de {sources} portais · clique para ler na fonte
+          {own ? `${items.length} matérias da redação` : `${items.length} manchetes de ${sources} portais · clique para ler na fonte`}
         </span>
       </div>
       <div className="tabs" role="tablist" aria-label="Editorias">
-        {TABS.map((t) => (
+        {tabs.map((t) => (
           <button key={t} role="tab" aria-selected={tab === t} className="tab" onClick={() => { setTab(t); reset(); }}>
             {t}
           </button>
@@ -74,9 +76,9 @@ export default function NewsFeed({ items, renderedAt }: { items: NewsItem[]; ren
           value={query}
           onChange={(e) => { setQuery(e.target.value); reset(); }}
         />
-        <select aria-label="Região" value={region} onChange={(e) => { setRegion(e.target.value as Region); reset(); }}>
+        {regions > 1 && <select aria-label="Região" value={region} onChange={(e) => { setRegion(e.target.value as Region); reset(); }}>
           {REGIONS.map((r) => <option key={r}>{r}</option>)}
-        </select>
+        </select>}
         <button className="chip" aria-pressed={mine} onClick={() => { setMine(!mine); reset(); }} title={held.join(", ")}>
           Só da minha carteira
         </button>
@@ -91,7 +93,7 @@ export default function NewsFeed({ items, renderedAt }: { items: NewsItem[]; ren
         )}
         {filtered.slice(0, shown).map((i) => (
           <li key={i.link}>
-            <a className="row-card" href={i.link} target="_blank" rel="noopener">
+            <a className="row-card" href={i.link} {...linkProps(i.link)}>
               <Thumb item={i} />
               <span className="row-text">
                 <span className={`cat cat-${slug(i.category)}`}>{i.category}</span>

@@ -3,12 +3,12 @@
 import { useEffect, useState } from "react";
 
 const NAV = [
-  ["Notícias", "#noticias"],
-  ["Mercados", "#mercado"],
-  ["Agenda", "#agenda"],
-  ["Calculadora", "#risco"],
-  ["Alertas", "#alertas"],
-  ["Glossário", "#glossario"],
+  ["Notícias", "/#noticias"],
+  ["Mercados", "/#mercado"],
+  ["Agenda", "/#agenda"],
+  ["Calculadora", "/#risco"],
+  ["Alertas", "/#alertas"],
+  ["Glossário", "/#glossario"],
 ] as const;
 
 type Theme = "light" | "dark";
@@ -34,7 +34,7 @@ export default function SiteHeader({ edition }: { edition: string }) {
   return (
     <header className="site-header">
       <div className="site-header-inner">
-        <a className="logo" href="#" aria-label="Jornal Cripto, início">
+        <a className="logo" href="/" aria-label="Jornal Cripto, início">
           <span className="logo-mark" aria-hidden="true">JC</span>
           <span className="logo-word">
             Jornal <b>Cripto</b>

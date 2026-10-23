@@ -19,3 +19,6 @@ export default function Thumb({ item, eager = false }: { item: NewsItem; eager?:
 }
 
 export const slug = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+
+/** Link externo abre em nova aba; matéria do próprio portal abre na mesma. */
+export const linkProps = (href: string) => (/^https?:/.test(href) ? { target: "_blank", rel: "noopener" } : {});

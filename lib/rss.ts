@@ -10,9 +10,10 @@ export interface NewsItem {
   category: Category;
   image?: string; // miniatura publicada no próprio feed
   summary?: string; // linha fina do feed, cortada em ~180 caracteres
+  author?: string; // matérias próprias
 }
 
-export const CATEGORIES = ["Bitcoin", "Ethereum", "Altcoins", "Mercados", "Regulação", "Blockchain"] as const;
+export const CATEGORIES = ["Brasil", "Bitcoin", "Ethereum", "Altcoins", "Mercados", "Regulação", "Macro", "Segurança", "Blockchain"] as const;
 export type Category = (typeof CATEGORIES)[number];
 
 const REGULATION = /\b(regula\w*|sec|cvm|banco central|bacen|lei|projeto de lei|imposto\w*|tribut\w*|receita federal|genius act|mica|congress\w*|senado|justiça|court|tribunal|sanç\w*|lawsuit)\b/i;

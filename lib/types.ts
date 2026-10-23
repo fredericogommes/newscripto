@@ -47,6 +47,7 @@ export interface EditionItem {
   title: string;
   body: string;
   source: string;
+  /** Link da matéria: interno (/noticias/...) quando a redação publicou, senão a fonte. */
   url: string;
 }
 

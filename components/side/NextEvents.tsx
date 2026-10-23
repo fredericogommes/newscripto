@@ -26,7 +26,7 @@ export default function NextEvents({ events, now }: { events: MarketEvent[]; now
           );
         })}
       </ol>
-      <a className="more" href="#agenda">Agenda completa →</a>
+      <a className="more" href="/#agenda">Agenda completa →</a>
     </section>
   );
 }
