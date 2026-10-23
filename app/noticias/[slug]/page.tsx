@@ -9,6 +9,7 @@ import TickerBar from "@/components/TickerBar.tsx";
 import MarketWidget from "@/components/side/MarketWidget.tsx";
 import NextEvents from "@/components/side/NextEvents.tsx";
 import ShareBar from "@/components/ShareBar.tsx";
+import SafeImg from "@/components/SafeImg.tsx";
 import { slug as catSlug } from "@/components/news/Thumb.tsx";
 
 export const revalidate = 300;
@@ -111,8 +112,7 @@ export default async function ArticlePage({ params }: Params) {
             </header>
             {a.imageUrl && (
               <figure className="article-figure">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={a.imageUrl} alt="" referrerPolicy="no-referrer" />
+                <SafeImg src={a.imageUrl} eager />
                 {a.imageCredit && <figcaption className="meta">Imagem: {a.imageCredit}</figcaption>}
               </figure>
             )}
@@ -148,8 +148,10 @@ export default async function ArticlePage({ params }: Params) {
                     <a key={r.slug} className="card" href={articlePath(r.slug)}>
                       <span className={`thumb cat-${catSlug(r.category)}`}>
                         {r.imageUrl ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={r.imageUrl} alt="" loading="lazy" referrerPolicy="no-referrer" />
+                          <SafeImg
+                            src={r.imageUrl}
+                            fallback={<span className="thumb-fallback" aria-hidden="true"><b>{r.tickers[0] ?? r.category}</b></span>}
+                          />
                         ) : (
                           <span className="thumb-fallback" aria-hidden="true"><b>{r.tickers[0] ?? r.category}</b></span>
                         )}
