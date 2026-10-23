@@ -42,3 +42,23 @@ test("eventos de mercado inteiro ignoram carteira só de stablecoin", () => {
   assert.equal(eventTouches(fed, ["USDT"], profiles), false);
   assert.equal(eventTouches(fed, ["USDT", "SOL"], profiles), true);
 });
+
+test("contribuição ao risco soma 100% e diversificação reduz a oscilação", () => {
+  const r = analyzePortfolio(
+    [{ ticker: "BTC", valueBrl: 10000 }, { ticker: "SOL", valueBrl: 10000 }, { ticker: "USDT", valueBrl: 5000 }],
+    profiles,
+  )!;
+  const sum = r.holdings.reduce((s, h) => s + h.riskShare, 0);
+  assert.ok(Math.abs(sum - 1) < 1e-9);
+  assert.ok(r.diversification > 0);
+  assert.ok(r.effectiveN > 2 && r.effectiveN < 3);
+  assert.equal(r.stableShare, 0.2);
+  assert.ok(r.es95DayBrl > r.var95DayBrl && r.var99DayBrl > r.var95DayBrl);
+  assert.equal(r.historical.length, 4);
+});
+
+test("cenário de alta usa o beta e nenhum ativo perde mais que tudo", () => {
+  const r = analyzePortfolio([{ ticker: "SOL", valueBrl: 1000 }], profiles)!;
+  assert.equal(Math.round(r.scenarios.find((s) => s.btcMove === 0.2)!.pnlBrl), 300);
+  assert.equal(Math.round(r.scenarios.find((s) => s.btcMove === -0.5)!.pnlBrl), -750);
+});

@@ -22,11 +22,24 @@ export interface AssetProfile {
   annualVol: number;
   betaBtc: number;
   isStable: boolean;
+  // Campos abaixo só existem quando o universo vem da CoinGecko ao vivo.
+  rank?: number;
+  image?: string;
+  priceBrl?: number;
+  change24h?: number; // %
+  change7d?: number; // %
+  change30d?: number; // %
+  athChange?: number; // % abaixo da máxima histórica (negativo)
+  exchanges?: string[];
+  /** true quando vol e beta foram medidos nos preços horários dos últimos 7 dias. */
+  measured?: boolean;
 }
 
 export interface Position {
   ticker: string;
   valueBrl: number;
+  /** Quando preenchida, a posição é informada em unidades e o valor sai do preço atual em R$. */
+  qty?: number;
 }
 
 export interface EditionItem {
