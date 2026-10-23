@@ -339,3 +339,4 @@ td.cell-wrap{white-space:normal;min-width:180px}
 .thumb.cat-brasil .thumb-fallback{background:linear-gradient(135deg,#16a34a,#0b3d1f)}
 .thumb.cat-macro .thumb-fallback{background:linear-gradient(135deg,#64748b,#1e293b)}
 .thumb.cat-seguranca .thumb-fallback{background:linear-gradient(135deg,#dc2626,#4c0d0d)}
+.article-figure:not(:has(img)) figcaption{display:none}
