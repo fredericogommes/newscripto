@@ -41,3 +41,14 @@ export const signedPct = (n: number) =>
 
 export const asOfLabel = (iso: string) =>
   new Date(iso).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit", timeZone: TZ });
+
+/** Tempo desde a publicação, no estilo dos portais: "há 12 min", "há 3 horas", "há 2 dias". */
+export function ago(date: number, now: number) {
+  const min = Math.max(0, Math.round((now - date) / 6e4));
+  if (min < 1) return "agora";
+  if (min < 60) return `há ${min} min`;
+  const h = Math.round(min / 60);
+  if (h < 24) return `há ${h} ${h === 1 ? "hora" : "horas"}`;
+  const d = Math.round(h / 24);
+  return `há ${d} ${d === 1 ? "dia" : "dias"}`;
+}
